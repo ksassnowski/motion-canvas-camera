@@ -313,6 +313,13 @@ export class CameraView extends Layout {
     }
   }
 
+  /**
+   * Moves the camera along the provided path.
+   *
+   * @param path - The path the camera should move along
+   * @param duration - The duration of the transition
+   * @param timing  - The timing function to use for the transition
+   */
   public *followPath(
     path: Line,
     duration: number = 1,
