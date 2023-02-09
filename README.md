@@ -273,10 +273,102 @@ https://user-images.githubusercontent.com/5139098/217865322-d04eb778-cdea-4db3-8
 
 #### `resetRotation`
 
+Resets the camera's rotation without changing it's scale or position.
+
+**Method Signature**
+
+```ts
+*resetRotation(
+    duration: number = 1,
+    timing: TimingFunction = easeInOutCubic
+): ThreadGenerator;
+```
+
+**Example**
+
+_coming soon_
+
 #### `shift`
+
+Shifts the camera's position by the provided vector.
+
+**Method Signature**
+
+```ts
+*shift(
+    by: Vector2,
+    duration: number = 1,
+    timing: TimingFunction = easeInOutCubic
+): ThreadGenerator;
+```
+
+**Example**
+
+_coming soon_
 
 #### `centerOn`
 
+Centers the camera viewport on the provided point, area or node without changing
+it's rotation or zoom.
+
+**Method Signature**
+
+```ts
+*centerOn(
+    area: Vector2 | PossibleRect | Node,
+    duration: number = 1,
+    timing: TimingFunction = easeInOutCubic,
+): ThreadGenerator;
+```
+
+**Example**
+
+_coming soon_
+
 #### `moveBetween`
 
+Moves the camera the provided nodes, one after the other.
+
+**Method Signature**
+
+```ts
+*centerOn(
+    nodes: Node[],
+    duration: number,
+    /**
+     * If provided, this callback will get called before each
+     * move starts.
+     *
+     * @param next - The animations for the next move. When providing this callback,
+     *               you should yield these animations for the next move to start. Having
+     *               access to these animations allows you to compose them together with
+     *               other animations you might want to apply during a specific move.
+     * @param node - The next node the camera will move to.
+     *
+     */
+    onBeforeMove?: (next: ThreadGenerator, target: Node) => ThreadGenerator,
+    timing?: TimingFunction = easeInOutCubic,
+): ThreadGenerator;
+```
+
+**Example**
+
+_coming soon_
+
 #### `followPath`
+
+Moves the camera along the provided path.
+
+**Method Signature**
+
+```ts
+*followPath(
+    path: Line,
+    duration: number = 1,
+    timing: TimingFunction = easeInOutCubic,
+): ThreadGenerator;
+```
+
+**Example**
+
+_coming soon_
