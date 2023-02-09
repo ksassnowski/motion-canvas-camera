@@ -70,3 +70,8 @@ export default makeScene2D(function* (view) {
   yield* camera().zoomOnto(circle2(), 3, 10);
 });
 ```
+
+https://user-images.githubusercontent.com/5139098/217832467-6c9c999a-d67e-42bd-8ed2-ad17bea8cc14.mp4
+
+
+
