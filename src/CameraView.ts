@@ -122,17 +122,20 @@ export class CameraView extends Layout {
     return this.rotation(0, duration, timing);
   }
 
-  public shift(
+  /**
+   * Shifts the camera into the provided direction.
+   *
+   * @param by - The direction in which to shift the camera.
+   * @param duration - The duration of the transition.
+   * @param timing - The timing function to use for the transition
+   */
+  public *shift(
     by: Vector2,
     duration: number = 1,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
-    const target = this.position()
-      .sub(by)
-      .mul(this.scale())
-      .transformAsPoint(this.rotationMatrix());
-
-    return this.position(target, duration, timing);
+    const target = this.position().sub(by.mul(this.scale()));
+    yield* this.position(target, duration, timing);
   }
 
   public zoomOnto(
