@@ -1,12 +1,12 @@
-import { CameraView } from "@ksassnowski/motion-canvas-camera";
+import { CameraView } from "@ksassnowski/motion-canvas-camera;
 
 import { makeScene2D } from "@motion-canvas/2d";
 import { Layout, Rect } from "@motion-canvas/2d/lib/components";
-import { Vector2 } from "@motion-canvas/core/lib/types";
 import { createRef } from "@motion-canvas/core/lib/utils";
 
 export default makeScene2D(function* (view) {
   const camera = createRef<CameraView>();
+  const rect = createRef<Rect>();
 
   yield view.add(
     <CameraView ref={camera} width={"100%"} height={"100%"}>
@@ -22,17 +22,14 @@ export default makeScene2D(function* (view) {
         <Rect grow={1} radius={14} fill={"crimson"} />
         <Layout direction={"column"} grow={1} gap={20} layout>
           <Rect grow={1} radius={14} fill={"bisque"} />
-          <Rect grow={1} radius={14} fill={"darksalmon"} />
+          <Rect ref={rect} grow={1} radius={14} fill={"darksalmon"} />
         </Layout>
         <Rect grow={1} radius={14} fill={"darkslategray"} />
       </Rect>
     </CameraView>,
   );
 
-  yield* camera().shift(Vector2.left.scale(200));
-  yield* camera().zoom(2.5, 2);
-  yield* camera().zoom(1);
-  yield* camera().shift(Vector2.right.scale(400));
-  yield* camera().zoom(2.5, 2);
-  yield* camera().reset(1);
+  yield* camera().zoomOnto(rect(), 1.5, 25);
+  yield* camera().resetZoom();
+  yield* camera().reset();
 });

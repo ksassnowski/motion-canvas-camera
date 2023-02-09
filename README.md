@@ -122,7 +122,7 @@ export default makeScene2D(function* (view) {
 
   yield* camera().shift(Vector2.left.scale(200));
   yield* camera().zoom(2.5, 2);
-  yield* camera().reset(1);
+  yield* camera().zoom(1);
   yield* camera().shift(Vector2.right.scale(400));
   yield* camera().zoom(2.5, 2);
   yield* camera().reset(1);
@@ -179,7 +179,87 @@ https://user-images.githubusercontent.com/5139098/217832467-6c9c999a-d67e-42bd-8
 
 #### `resetZoom`
 
+Resets the camera's zoom to `baseZoom` without changing the camera's position.
+
+**Method signature**
+
+```ts
+*resetZoom(
+    duration: number = 1,
+    timing: TimingFunction = easeInOutCubic
+): ThreadGenerator;
+```
+
+**Example**
+
+```tsx
+export default makeScene2D(function* (view) {
+  const camera = createRef<CameraView>();
+  const rect = createRef<Rect>();
+
+  yield view.add(
+    <CameraView ref={camera} width={"100%"} height={"100%"}>
+      <Rect
+        width={1024}
+        height={768}
+        // style...
+        layout
+      >
+        <Rect grow={1} radius={14} fill={"crimson"} />
+        <Layout direction={"column"} grow={1} gap={20} layout>
+          <Rect grow={1} radius={14} fill={"bisque"} />
+          <Rect ref={rect} grow={1} radius={14} fill={"darksalmon"} />
+        </Layout>
+        <Rect grow={1} radius={14} fill={"darkslategray"} />
+      </Rect>
+    </CameraView>,
+  );
+
+  yield* camera().zoomOnto(rect(), 1.5, 25);
+  yield* camera().resetZoom();
+  yield* camera().reset();
+});
+```
+
 #### `rotate`
+
+Rotates the camera around its current position. The angle is provided in degrees.
+
+**Method Signature**
+
+```ts
+*rotate(
+    angle: number,
+    duration: number = 1,
+    timing: TimingFunction = easeInOutCubic
+): ThreadGenerator;
+```
+
+**Example**
+
+```tsx
+export default makeScene2D(function* (view) {
+  const camera = createRef<CameraView>();
+  const rect = createRef<Rect>();
+
+  yield view.add(
+    <CameraView ref={camera} width={"100%"} height={"100%"}>
+      <Rect ref={rect} position={[200, 200]} fill={"crimson"} /* styles... */ />
+      <Rect position={[300, -200]} fill={"bisque"} /* styles... */ />
+      <Rect position={[-300, 300]} fill={"darksalmon"} /* styles... */ />
+      <Rect position={[-400, -320]} fill={"darkslategray"} /* styles... */ />
+    </CameraView>,
+  );
+
+  yield* camera().zoomOnto(rect(), 1.5, 300);
+  yield* camera().rotate(45);
+  yield* camera().shift(Vector2.right.scale(200));
+  yield* camera().rotate(-20);
+  yield* camera().rotate(90);
+  yield* camera().resetZoom();
+  yield* camera().reset();
+});
+```
 
 #### `resetRotation`
 
