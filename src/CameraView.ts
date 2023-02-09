@@ -115,11 +115,11 @@ export class CameraView extends Layout {
    * @param duration - The duration of the transition
    * @param timing - The timing function to use for the transition
    */
-  public resetRotation(
+  public *resetRotation(
     duration: number = 1,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
-    return this.rotation(0, duration, timing);
+    yield* this.rotation(0, duration, timing);
   }
 
   /**
