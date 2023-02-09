@@ -133,7 +133,6 @@ export default makeScene2D(function* (view) {
 
 https://user-images.githubusercontent.com/5139098/217865846-af1ce5ef-ad02-4947-8270-da1c04c5a771.mp4
 
-
 #### `zoomOnto`
 
 Zooms the camera onto the provided area or node until it fills the viewport. When providing
@@ -227,7 +226,6 @@ export default makeScene2D(function* (view) {
 ```
 
 https://user-images.githubusercontent.com/5139098/217866036-3e677a3f-9738-4ceb-a50b-de9d3123bb25.mp4
-
 
 #### `rotate`
 
