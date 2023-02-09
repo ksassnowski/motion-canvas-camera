@@ -1,0 +1,31 @@
+{
+  "name": "@ksassnowski/motion-canvas-camera",
+  "version": "0.1.0",
+  "description": "A camera component for Motion Canvas",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "format": "pretetier --write \"src/**/*.ts\"",
+    "prepare": "npm run build",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "author": "Kai Sassnowski",
+  "license": "MIT",
+  "dependencies": {
+    "@motion-canvas/2d": "^2.1.0",
+    "@motion-canvas/core": "^2.1.0",
+    "@types/lodash": "^4.14.191",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.0.0",
+    "@types/node": "^18.13.0",
+    "prettier": "^2.8.4",
+    "typescript": "^4.9.5"
+  }
+}
