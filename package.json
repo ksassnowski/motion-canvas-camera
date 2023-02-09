@@ -1,8 +1,15 @@
 {
   "name": "@ksassnowski/motion-canvas-camera",
+  "author": "Kai Sassnowski",
   "version": "0.1.0",
   "description": "A camera component for Motion Canvas",
-  "main": "index.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "keywords": [
+    "motion-canvas",
+    "camera",
+    "animation"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
@@ -14,7 +21,6 @@
   "files": [
     "lib/**/*"
   ],
-  "author": "Kai Sassnowski",
   "license": "MIT",
   "dependencies": {
     "@motion-canvas/2d": "^2.1.0",
