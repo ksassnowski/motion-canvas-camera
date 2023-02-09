@@ -105,8 +105,20 @@ export class CameraView extends Layout {
     duration: number = 1,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
+    const transformPoint = (point: Vector2, angle: number): Vector2 => {
+      const rotationMatrix = new DOMMatrix();
+      rotationMatrix.rotateSelf(0, 0, angle);
+      return point.transformAsPoint(rotationMatrix);
+    };
     const rotation = this.rotation() + angle;
-    yield* this.rotation(rotation, duration, timing);
+    const targetPosition = transformPoint(this.position(), angle);
+
+    yield* all(
+      this.rotation(rotation, duration, timing),
+      this.position(targetPosition, duration, timing, (from, to, value) =>
+        transformPoint(from, angle * value),
+      ),
+    );
   }
 
   /**
