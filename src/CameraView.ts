@@ -125,7 +125,7 @@ export class CameraView extends Layout {
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
     const target = this.position()
-      .add(by)
+      .sub(by)
       .mul(this.scale())
       .transformAsPoint(this.rotationMatrix());
 
