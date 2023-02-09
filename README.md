@@ -267,7 +267,8 @@ export default makeScene2D(function* (view) {
 });
 ```
 
-https://user-images.githubusercontent.com/5139098/217865322-d04eb778-cdea-4db3-8af5-26409c3d1d20.mp4
+https://user-images.githubusercontent.com/5139098/217883813-bbe1595e-501a-4b36-8dee-12f1cdeda57b.mp4
+
 
 #### `resetRotation`
 
