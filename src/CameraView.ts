@@ -87,7 +87,10 @@ export class CameraView extends Layout {
     duration: number = 1,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
-    return this.scale(1, duration, timing);
+    return all(
+      this.scale(this.baseZoom(), duration, timing),
+      this.position(this.position().div(this.scale()), duration, timing),
+    );
   }
 
   /**
