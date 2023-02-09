@@ -19,6 +19,13 @@ yarn add @ksassnowski/motion-canvas-camera
 ## Basic Usage
 
 ```tsx
+import { CameraView } from "@ksassnowski/motion-canvas-camera";
+
+import { makeScene2D } from "@motion-canvas/2d";
+import { Circle, Line, Rect } from "@motion-canvas/2d/lib/components";
+import { easeInOutSine } from "@motion-canvas/core/lib/tweening";
+import { createRef } from "@motion-canvas/core/lib/utils";
+
 export default makeScene2D(function* (view) {
   const camera = createRef<CameraView>();
   const rect = createRef<Rect>();
@@ -55,10 +62,16 @@ export default makeScene2D(function* (view) {
     <Line ref={path} points={[rect().position, circle().position, [0, 0]]} />,
   );
 
+  yield* camera().rotate(35);
   yield* camera().followPath(path(), 4, easeInOutSine);
-  yield* camera().reset();
+  yield* camera().reset(2);
 });
+
 ```
+
+**Result**
+
+https://user-images.githubusercontent.com/5139098/217892986-96c1ff6c-b846-4b03-9fa8-d3d63bd3fa3c.mp4
 
 ### Props
 
