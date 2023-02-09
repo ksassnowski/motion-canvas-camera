@@ -81,6 +81,8 @@ export default makeScene2D(function* (view) {
 });
 ```
 
+https://user-images.githubusercontent.com/5139098/217865658-c08b2c38-700b-4849-943c-49c2b047bfb8.mp4
+
 #### `zoom`
 
 Zooms the camera in on the current position.
@@ -128,6 +130,9 @@ export default makeScene2D(function* (view) {
   yield* camera().reset(1);
 });
 ```
+
+https://user-images.githubusercontent.com/5139098/217865846-af1ce5ef-ad02-4947-8270-da1c04c5a771.mp4
+
 
 #### `zoomOnto`
 
@@ -221,6 +226,9 @@ export default makeScene2D(function* (view) {
 });
 ```
 
+https://user-images.githubusercontent.com/5139098/217866036-3e677a3f-9738-4ceb-a50b-de9d3123bb25.mp4
+
+
 #### `rotate`
 
 Rotates the camera around its current position. The angle is provided in degrees.
@@ -260,6 +268,8 @@ export default makeScene2D(function* (view) {
   yield* camera().reset();
 });
 ```
+
+https://user-images.githubusercontent.com/5139098/217865322-d04eb778-cdea-4db3-8af5-26409c3d1d20.mp4
 
 #### `resetRotation`
 
