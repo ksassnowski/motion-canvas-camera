@@ -1,6 +1,6 @@
 # Motion Canvas Camera
 
-A camera component for [Motion Canvas] that allows you focus on elements, move the camera, follow paths and much more.
+A camera component for [Motion Canvas](https://github.com/motion-canvas/motion-canvas) that allows you focus on elements, move the camera, follow paths and much more.
 
 ## Installation
 
@@ -18,10 +18,47 @@ yarn add @ksassnowski/motion-canvas-camera
 
 ## Basic Usage
 
-- add camera to view
-- put any nodes you want part of camera as child of camera
-- grab reference to camera
-- make sure to add new nodes to camera, not view
+```tsx
+export default makeScene2D(function* (view) {
+  const camera = createRef<CameraView>();
+  const rect = createRef<Rect>();
+  const circle = createRef<Rect>();
+  const path = createRef<Line>();
+
+  view.add(
+    <CameraView ref={camera} width={"100%"} height={"100%"}>
+      <Rect
+        ref={rect}
+        position={[-600, -300]}
+        width={200}
+        height={200}
+        radius={14}
+        fill={"steelblue"}
+      />
+    </CameraView>,
+  );
+
+  yield* camera().zoomOnto(rect(), 1.5, 200);
+
+  // Make sure to add elements to the `camera`, not to the `view`
+  // if you want them to be part of the camera's "field of view".
+  camera().add(
+    <Circle
+      ref={circle}
+      fill={"bisque"}
+      width={60}
+      height={60}
+      position={[-200, -250]}
+    />,
+  );
+  camera().add(
+    <Line ref={path} points={[rect().position, circle().position, [0, 0]]} />,
+  );
+
+  yield* camera().followPath(path(), 4, easeInOutSine);
+  yield* camera().reset();
+});
+```
 
 ### Props
 
@@ -90,10 +127,9 @@ Zooms the camera in on the current position.
 **Method signature**
 
 ```ts
-*zoomOnto(
-    area: Node | PossibleRect,
+*zoom(
+    zoom: nummber,
     duration: number = 1,
-    buffer: number = 0,
     timing: TimingFunction = easeInOutCubic
 ): ThreadGenerator;
 ```
@@ -137,6 +173,7 @@ https://user-images.githubusercontent.com/5139098/217865846-af1ce5ef-ad02-4947-8
 
 Zooms the camera onto the provided area or node until it fills the viewport. When providing
 a node, the node **must** be a child of the camera, although it doesn't have to be a direct child.
+Areas should be provided in local space of the camera.
 
 Can optionally apply `buffer` around the area and the viewport.
 
@@ -371,3 +408,7 @@ Moves the camera along the provided path.
 **Example**
 
 _coming soon_
+
+## Known Limitations
+
+This is still an early release so expect some jank. In particular, the various transformations of the camera often don't compose particularly well. So rotating the camera while also moving it probably won't work as expected. This will mostl likely be fixed in a future release, however.
