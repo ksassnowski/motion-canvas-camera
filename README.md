@@ -1,4 +1,4 @@
-# Motion Canvas Camera
+# :movie_camera: Motion Canvas Camera
 
 https://user-images.githubusercontent.com/5139098/218100233-fa3bde50-122b-4e21-8ecb-0817ae5ed76a.mp4
 
