@@ -66,7 +66,6 @@ export default makeScene2D(function* (view) {
   yield* camera().followPath(path(), 4, easeInOutSine);
   yield* camera().reset(2);
 });
-
 ```
 
 **Result**
@@ -319,7 +318,6 @@ export default makeScene2D(function* (view) {
 
 https://user-images.githubusercontent.com/5139098/217883813-bbe1595e-501a-4b36-8dee-12f1cdeda57b.mp4
 
-
 #### `resetRotation`
 
 Resets the camera's rotation without changing it's scale or position.
@@ -421,7 +419,3 @@ Moves the camera along the provided path.
 **Example**
 
 _coming soon_
-
-## Known Limitations
-
-This is still an early release so expect some jank. In particular, the various transformations of the camera often don't compose particularly well. So rotating the camera while also moving it probably won't work as expected. This will mostl likely be fixed in a future release, however.
