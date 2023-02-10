@@ -74,6 +74,17 @@ export default makeScene2D(function* (view) {
 
 https://user-images.githubusercontent.com/5139098/217892986-96c1ff6c-b846-4b03-9fa8-d3d63bd3fa3c.mp4
 
+Note that any node that isn't a child of the `CameraView` (either directly or transitively), will not be
+affected by the camera's transformation.
+
+{% warning %}
+
+**Warning:** The camera updates its `position`, `scale` and `rotation` internally so you should **not** set
+or change these properties manually. If you want to position the camera in a different location of the
+screen, wrap it in a `Layout` node and position that node instead.
+
+{% endwarning %}
+
 ### Props
 
 ```ts
