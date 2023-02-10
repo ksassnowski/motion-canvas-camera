@@ -335,7 +335,24 @@ Resets the camera's rotation without changing it's scale or position.
 
 **Example**
 
-_coming soon_
+```tsx
+export default makeScene2D(function* (view) {
+  const camera = createRef<CameraView>();
+
+  yield view.add(
+    <CameraView ref={camera} width={"100%"} height={"100%"}>
+      <Rect position={[200, 200]} fill={"crimson"} /* styles... */ />
+      <Rect position={[300, -200]} fill={"bisque"} /* styles... */ />
+      <Rect position={[-300, 300]} fill={"darksalmon"} /* styles... */ />
+      <Rect position={[-400, -320]} fill={"darkslategray"} /* styles... */ />
+    </CameraView>,
+  );
+
+  yield* camera().zoom(1.5);
+  yield* camera().shift(new Vector2(200, -100));
+  yield* camera().resetZoom();
+});
+```
 
 #### `shift`
 
@@ -353,7 +370,24 @@ Shifts the camera's position by the provided vector.
 
 **Example**
 
-_coming soon_
+```tsx
+export default makeScene2D(function* (view) {
+  const camera = createRef<CameraView>();
+
+  yield view.add(
+    <CameraView ref={camera} width={"100%"} height={"100%"}>
+      <Rect position={[200, 200]} fill={"crimson"} /* styles... */ />
+      <Rect position={[300, -200]} fill={"bisque"} /* styles... */ />
+      <Rect position={[-300, 300]} fill={"darksalmon"} /* styles... */ />
+      <Rect position={[-400, -320]} fill={"darkslategray"} /* styles... */ />
+    </CameraView>,
+  );
+
+  yield* camera().shift(new Vector2(200, -100));
+  yield* camera().shift(new Vector2(0, -300));
+  yield* camera().shift(new Vector2(-400, 0));
+});
+```
 
 #### `centerOn`
 
@@ -381,7 +415,7 @@ Moves the camera the provided nodes, one after the other.
 **Method Signature**
 
 ```ts
-*centerOn(
+*moveBetween(
     nodes: Node[],
     duration: number,
     /**
