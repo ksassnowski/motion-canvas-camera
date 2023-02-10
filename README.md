@@ -9,7 +9,7 @@ A camera component for [Motion Canvas](https://github.com/motion-canvas/motion-c
 To install, run the following command inside your Motion Canvas project.
 
 ```
-npm install @ksassnowski/motion-canvas-camera
+npm install --save @ksassnowski/motion-canvas-camera
 ```
 
 Or, if you're using Yarn:
