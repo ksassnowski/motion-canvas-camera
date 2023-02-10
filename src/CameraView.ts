@@ -1,5 +1,3 @@
-import { castArray } from "lodash";
-
 import {
   Layout,
   LayoutProps,
@@ -17,28 +15,123 @@ import {
 import { PossibleRect, Rect, Vector2 } from "@motion-canvas/core/lib/types";
 import { useLogger } from "@motion-canvas/core/lib/utils";
 
-import cycle from "./cycle";
+import { getFromCycled, wrapArray } from "./utils";
 
 export interface TravelOptions {
+  /**
+   * How long each movement transition takes.
+   *
+   * If a single value is provided, the same duration will get used for all moves.
+   *
+   * If an array is provided, the duration that corresponds to the index  of the
+   * current move will get used. For example, if the camera is moving from the first
+   * node to the second node, the index will be `0` and so the first duration from
+   * the array gets used. Note that this array gets cycled, meaning that if you
+   * provide fewer durations than there are transitions, the array will wrap around
+   * to the beginning.
+   */
   duration: number | number[];
+
+  /**
+   * Whether the camera should zoom onto the target node.
+   *
+   * If a single value is provided, the same setting will get used for all moves.
+   *
+   * If an array is provided, the entry that corresponds to the index of the current
+   * move will get used. For example, if the camera is moving from the first node to
+   * the second node, the index will be `0` and so the first entry from the array
+   * gets used. Note that this array gets cycled, meaning that if you provide fewer
+   * entries than there are transitions, the array will wrap around to the beginning.
+   */
   zoom: boolean | boolean[];
+
+  /**
+   * How long to wait before starting each move.
+   *
+   * If a single value is provided, the same delay will get used for all moves.
+   *
+   * If an array is provided, the entry that corresponds to the index of the current
+   * move will get used. For example, if the camera is moving from the first node to
+   * the second node, the index will be `0` and so the first entry from the array
+   * gets used. Note that this array gets cycled, meaning that if you provide fewer
+   * entries than there are transitions, the array will wrap around to the beginning.
+   */
   buffer: number | number[];
+
+  /**
+   * How long to wait before starting each move.
+   *
+   * If a single value is provided, the same delay will get used for all moves.
+   *
+   * If an array is provided, the entry that corresponds to the index of the current
+   * move will get used. For example, if the camera is moving from the first node to
+   * the second node, the index will be `0` and so the first entry from the array
+   * gets used. Note that this array gets cycled, meaning that if you provide fewer
+   * entries than there are transitions, the array will wrap around to the beginning.
+   */
   wait: number | number[];
+
+  /**
+   * The timing function used for the transitions of the move.
+   *
+   * If a single value is provided, the same timing function will get applied
+   * for all moves.
+   *
+   * If an array is provided, the entry that corresponds to the index of the current
+   * move will get used. For example, if the camera is moving from the first node to
+   * the second node, the index will be `0` and so the first entry from the array
+   * gets used. Note that this array gets cycled, meaning that if you provide fewer
+   * entries than there are transitions, the array will wrap around to the beginning.
+   */
   timing: TimingFunction | TimingFunction[];
+
+  /**
+   * Hook that gets called every time before the camera moves on to the next node.
+   *
+   * @param next - The animations for moving the camera to the next node.
+   *               These animations should be part of the resulting ThreadGenerator
+   *               that this callback returns. Otherwise, the camera won't continue
+   *               on to the next node. The advantage is that you can compose the
+   *               movement animations with any other animations that should get
+   *               applied during the next move as well
+   * @param target - The next node the camera will move to
+   */
   onBeforeMove: (next: ThreadGenerator, target: Node) => ThreadGenerator;
 }
 
-export interface CameraViewProps extends LayoutProps {
+export interface CameraViewProps
+  extends Omit<LayoutProps, "scale" | "position"> {
   baseZoom?: number;
 }
 
 export class CameraView extends Layout {
+  private translation = Vector2.createSignal(0);
+
   @initial(1)
   @signal()
   public declare readonly baseZoom: SimpleSignal<number, this>;
 
   public constructor(props: CameraViewProps) {
-    super({ clip: true, scale: props.baseZoom ?? 1, ...props });
+    super({
+      clip: true,
+      ...props,
+      scale: props.baseZoom ?? 1,
+      position: () => this.actualPosition(),
+    });
+  }
+
+  @computed()
+  private rotationMatrix(): DOMMatrix {
+    const matrix = new DOMMatrix();
+    matrix.rotateSelf(0, 0, this.rotation());
+    return matrix;
+  }
+
+  @computed()
+  private actualPosition() {
+    return this.translation()
+      .mul(this.scale())
+      .transformAsPoint(this.rotationMatrix());
   }
 
   /**
@@ -47,13 +140,13 @@ export class CameraView extends Layout {
    * @param duration The duration of the transition
    * @param timing The timing function to use for the transition
    */
-  public reset(
+  public *reset(
     duration: number = 1,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
-    return all(
+    yield* all(
       this.scale(this.baseZoom(), duration, timing),
-      this.position(Vector2.zero, duration, timing),
+      this.translation(Vector2.zero, duration, timing),
       this.rotation(0, duration, timing),
     );
   }
@@ -66,15 +159,12 @@ export class CameraView extends Layout {
    * @param duration The duration of the transition
    * @param timing  The timing function used for the transition
    */
-  public zoom(
+  public *zoom(
     zoom: number,
     duration: number = 1,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
-    return all(
-      this.scale(zoom * this.baseZoom(), duration, timing),
-      this.position(this.position().scale(zoom), duration, timing),
-    );
+    yield* this.scale(zoom * this.baseZoom(), duration, timing);
   }
 
   /**
@@ -83,14 +173,11 @@ export class CameraView extends Layout {
    * @param duration - The duration of the transition
    * @param timing - The timing function to use for the transition
    */
-  public resetZoom(
+  public *resetZoom(
     duration: number = 1,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
-    return all(
-      this.scale(this.baseZoom(), duration, timing),
-      this.position(this.position().div(this.scale()), duration, timing),
-    );
+    yield* this.scale(this.baseZoom(), duration, timing);
   }
 
   /**
@@ -105,20 +192,7 @@ export class CameraView extends Layout {
     duration: number = 1,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
-    const transformPoint = (point: Vector2, angle: number): Vector2 => {
-      const rotationMatrix = new DOMMatrix();
-      rotationMatrix.rotateSelf(0, 0, angle);
-      return point.transformAsPoint(rotationMatrix);
-    };
-    const rotation = this.rotation() + angle;
-    const targetPosition = transformPoint(this.position(), angle);
-
-    yield* all(
-      this.rotation(rotation, duration, timing),
-      this.position(targetPosition, duration, timing, (from, to, value) =>
-        transformPoint(from, angle * value),
-      ),
-    );
+    yield* this.rotation(this.rotation() + angle, duration, timing);
   }
 
   /**
@@ -137,42 +211,52 @@ export class CameraView extends Layout {
   /**
    * Shifts the camera into the provided direction.
    *
-   * @param by - The direction in which to shift the camera.
-   * @param duration - The duration of the transition.
-   * @param timing - The timing function to use for the transition
+   * @param by - The amount and direction in which to shift the camera
+   * @param duration - The duration of the transition
+   * @param timing - The timing function used for the transition
    */
   public *shift(
     by: Vector2,
     duration: number = 1,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
-    const target = this.position().sub(by.mul(this.scale()));
-    yield* this.position(target, duration, timing);
+    yield* this.translation(this.translation().sub(by), duration, timing);
   }
 
+  /**
+   * Zooms the view onto the provided area until it fills out the viewport.
+   * Can optionally apply a buffer around the node.
+   *
+   * @param area - The area on which to zoom onto. The position of the area needs to
+   *               be in local space.
+   * @param duration - The duration of the transition
+   * @param buffer - The buffer to apply around the node and the viewport edges
+   * @param timing - The timing function to use for the transition
+   */
   public zoomOnto(
     area: PossibleRect,
     duration?: number,
     buffer?: number,
     timing?: TimingFunction,
   ): ThreadGenerator;
+
+  /**
+   * Zooms the view onto the provided node until it fills out the viewport.
+   * Can optionally apply a buffer around the node.
+   *
+   * @param node - The node to zoom onto. The node needs to either be a direct or
+   *               transitive child of the camera node.
+   * @param duration - The duration of the transition
+   * @param buffer - The buffer to apply around the node and the viewport edges
+   * @param timing - The timing function to use for the transition
+   */
   public zoomOnto(
     node: Node,
     duration?: number,
     buffer?: number,
     timing?: TimingFunction,
   ): ThreadGenerator;
-  /**
-   * Zooms the view onto the provided node or area until it fills out the viewport.
-   * Can optionally apply a buffer around the node.
-   *
-   * @param area - The node or area on which to zoom onto. Areas should be provided
-   *               in local space. Nodes must be a child of the camera view, although
-   *               they don't have to be a direct child.
-   * @param duration - The duration of the transition
-   * @param buffer - The buffer to apply around the node and the viewport edges
-   * @param timing - The timing function to use for the transition
-   */
+
   public *zoomOnto(
     area: PossibleRect | Node,
     duration: number = 1,
@@ -195,39 +279,39 @@ export class CameraView extends Layout {
 
     const rect = new Rect(area);
     const scale = this.size().div(this.fitRectAroundArea(rect, buffer));
-    const targetPosition = this.calculateOffsetToCenterOntoArea(rect, scale);
 
     yield* all(
       this.scale(scale, duration, timing),
-      this.position(targetPosition, duration, timing, (from, to, value) => {
-        // We need to provide a custom interpolation function here
-        // because we need to account for any rotation that might
-        // have also been applied to the camera.
-        const matrix = new DOMMatrix();
-        matrix.rotateSelf(0, 0, this.rotation());
-        return from.lerp(to.transformAsPoint(matrix), value);
-      }),
+      this.translation(rect.position.flipped, duration, timing),
     );
   }
 
+  /**
+   * Centers the camera view on the provided node without changing the zoom level.
+   *
+   * @param node - The node to center on. The node needs to either be a direct or
+   *               transitive child of the camera node.
+   * @param duration - The duration of the transition
+   * @param timing - The timing function to use for the transition
+   */
   public centerOn(
     node: Node,
     duration?: number,
     timing?: TimingFunction,
   ): ThreadGenerator;
+
+  /**
+   * Centers the camera view on the provided area without changing the zoom level.
+   *
+   * @param area - The area to center on. The position of the area should be in local space.
+   * @param duration - The duration of the transition
+   * @param timing - The timing function to use for the transition
+   */
   public centerOn(
     area: PossibleRect,
     duration?: number,
     timing?: TimingFunction,
   ): ThreadGenerator;
-  /**
-   * Centers the camera view on the provided node without
-   * changing the zoom level.
-   *
-   * @param node - The node to center on
-   * @param duration - The duration of the transition
-   * @param timing - The timing function to use for the transition
-   */
   public *centerOn(
     area: Vector2 | PossibleRect | Node,
     duration: number = 1,
@@ -244,23 +328,37 @@ export class CameraView extends Layout {
       area = this.getRectFromNode(area);
     }
 
-    yield* this.position(
-      this.calculateOffsetToCenterOntoArea(new Rect(area), this.scale()),
-      duration,
-      timing,
-    );
+    yield* this.translation(new Rect(area).position.flipped, duration, timing);
   }
 
+  /**
+   * Move the camera between the provided nodes, one after the other.
+   *
+   * @param nodes - The nodes to move between
+   * @param options - The options describing each itinerary of the transitions.
+   *                  See @see{TravelOptions} for move information about what
+   *                  each of the options does.
+   */
   public moveBetween(
     nodes: Node[],
     options: Partial<TravelOptions>,
   ): ThreadGenerator;
+
+  /**
+   * Move the camera between the provided nodes, one after the other.
+   *
+   * @param nodes - The nodes to move between
+   * @param duration - The duration of the transition
+   * @param onBeforeMove - Callback that gets called before starting each itinerary
+   * @param timing - The timing function used for the transition
+   */
   public moveBetween(
     nodes: Node[],
     duration: number,
     onBeforeMove?: (next: ThreadGenerator, target: Node) => ThreadGenerator,
     timing?: TimingFunction,
   ): ThreadGenerator;
+
   public *moveBetween(
     nodes: Node[],
     options: number | Partial<TravelOptions> = 1,
@@ -286,11 +384,11 @@ export class CameraView extends Layout {
       defaults = Object.assign({}, defaults, options);
     }
 
-    defaults.duration = cycle(castArray(defaults.duration));
-    defaults.buffer = cycle(castArray(defaults.buffer));
-    defaults.wait = cycle(castArray(defaults.wait));
-    defaults.zoom = cycle(castArray(defaults.zoom));
-    defaults.timing = cycle(castArray(defaults.timing));
+    defaults.duration = wrapArray(defaults.duration);
+    defaults.buffer = wrapArray(defaults.buffer);
+    defaults.wait = wrapArray(defaults.wait);
+    defaults.zoom = wrapArray(defaults.zoom);
+    defaults.timing = wrapArray(defaults.timing);
 
     nodes = nodes.filter((node) => {
       const result = this.isPartOfSceneTree(node);
@@ -303,11 +401,11 @@ export class CameraView extends Layout {
     });
 
     for (let i = 0; i < nodes.length; i++) {
-      const zoom = defaults.zoom[i];
-      const node = nodes[i];
-      const duration = defaults.duration[i];
-      const wait = defaults.wait[i];
-      const timing = defaults.timing[i];
+      const zoom = getFromCycled(defaults.zoom, i);
+      const node = getFromCycled(nodes, i);
+      const duration = getFromCycled(defaults.duration, i);
+      const wait = getFromCycled(defaults.wait, i);
+      const timing = getFromCycled(defaults.timing, i);
 
       let transition: ThreadGenerator;
 
@@ -326,11 +424,11 @@ export class CameraView extends Layout {
   }
 
   /**
-   * Moves the camera along the provided path.
+   * Make the camera follow the provided path.
    *
-   * @param path - The path the camera should move along
+   * @param path - The path to follow
    * @param duration - The duration of the transition
-   * @param timing  - The timing function to use for the transition
+   * @param timing  - The timing function used for the transition
    */
   public *followPath(
     path: Line,
@@ -340,34 +438,17 @@ export class CameraView extends Layout {
     const transformPoint = (point: Vector2): Vector2 =>
       point
         .transformAsPoint(path.localToWorld())
-        .transformAsPoint(this.worldToLocal())
-        .transformAsPoint(this.rotationMatrix())
-        .mul(this.scale()).flipped;
+        .transformAsPoint(this.worldToLocal()).flipped;
 
-    const destination = transformPoint(path.parsedPoints().at(-1)!);
+    const destination = transformPoint(path.getPointAtPercentage(1).position);
 
-    yield* this.position(destination, duration, timing, (from, to, value) =>
+    yield* this.translation(destination, duration, timing, (from, to, value) =>
       transformPoint(path.getPointAtPercentage(value).position),
     );
   }
 
-  @computed()
-  private rotationMatrix(): DOMMatrix {
-    const matrix = new DOMMatrix();
-    matrix.rotateSelf(0, 0, this.rotation());
-    return matrix;
-  }
-
-  private calculateOffsetToCenterOntoArea(
-    area: Rect,
-    scale: Vector2 = Vector2.one,
-  ): Vector2 {
-    return area.position.mul(scale).flipped;
-  }
-
   /**
-   * Recursively checks if the provided node is a child of the
-   * camera view.
+   * Recursively checks if the provided node is a child of the camera view.
    *
    * @param node - The node to check
    */
