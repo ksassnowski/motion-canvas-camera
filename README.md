@@ -77,7 +77,7 @@ https://user-images.githubusercontent.com/5139098/217892986-96c1ff6c-b846-4b03-9
 Note that any node that isn't a child of the `CameraView` (either directly or transitively), will not be
 affected by the camera's transformation.
 
-> **Warning**
+> **Warning** <br>
 > The camera updates its `position`, `scale` and `rotation` internally so you should **not** set or change these properties manually. If you want to position the camera in a different location of the screen, wrap it in a `Layout` node and position that node instead.
 
 ### Props
@@ -360,6 +360,8 @@ export default makeScene2D(function* (view) {
 });
 ```
 
+https://user-images.githubusercontent.com/5139098/218136179-81a3b3af-0a09-443b-8dea-12c1cb84931c.mp4
+
 #### `shift`
 
 Shifts the camera's position by the provided vector.
@@ -389,11 +391,13 @@ export default makeScene2D(function* (view) {
     </CameraView>,
   );
 
-  yield* camera().shift(new Vector2(200, -100));
-  yield* camera().shift(new Vector2(0, -300));
-  yield* camera().shift(new Vector2(-400, 0));
+  yield* camera().rotate(46);
+  yield* camera().rotate(-10);
+  yield* camera().resetRotation();
 });
 ```
+
+https://user-images.githubusercontent.com/5139098/218135450-dc6d0559-b239-4416-bc33-f6169beee5be.mp4
 
 #### `centerOn`
 
