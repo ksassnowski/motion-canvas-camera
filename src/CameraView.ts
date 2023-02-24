@@ -104,7 +104,14 @@ export interface CameraViewProps
   baseZoom?: number;
 }
 
+export interface CameraState {
+  translation: Vector2;
+  rotation: number;
+  scale: Vector2;
+}
+
 export class CameraView extends Layout {
+  private stateStack: CameraState[] = [];
   private translation = Vector2.createSignal(0);
 
   @initial(1)
@@ -444,6 +451,41 @@ export class CameraView extends Layout {
 
     yield* this.translation(destination, duration, timing, (from, to, value) =>
       transformPoint(path.getPointAtPercentage(value).position),
+    );
+  }
+
+  /**
+   * Push the camera's current state onto the state stack. To restore to the
+   * last state, use the @see{CameraView.restore} method.
+   */
+  public save(): void {
+    this.stateStack.push({
+      translation: this.translation(),
+      scale: this.scale(),
+      rotation: this.rotation(),
+    });
+  }
+
+  /**
+   * Restore the camera's state to the last saved state on the stack.
+   *
+   * @param duration - The duration of the transition.
+   * @param timing - The timing function to use for the transition.
+   */
+  public *restore(
+    duration: number,
+    timing: TimingFunction = easeInOutCubic,
+  ): ThreadGenerator {
+    const targetState = this.stateStack.pop();
+
+    if (targetState === undefined) {
+      return;
+    }
+
+    yield* all(
+      this.translation(targetState.translation, duration, timing),
+      this.rotation(targetState.rotation, duration, timing),
+      this.scale(targetState.scale, duration, timing),
     );
   }
 
