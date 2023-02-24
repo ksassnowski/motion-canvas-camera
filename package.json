@@ -23,8 +23,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@motion-canvas/2d": "^2.1.0",
-    "@motion-canvas/core": "^2.1.0"
+    "@motion-canvas/2d": "^2.5.0",
+    "@motion-canvas/core": "^2.5.0"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.0.0",
