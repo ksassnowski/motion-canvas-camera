@@ -1,7 +1,7 @@
 {
   "name": "@ksassnowski/motion-canvas-camera",
   "author": "Kai Sassnowski",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A camera component for Motion Canvas",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -23,8 +23,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@motion-canvas/2d": "^2.5.0",
-    "@motion-canvas/core": "^2.5.0"
+    "@motion-canvas/2d": "^2.6.0",
+    "@motion-canvas/core": "^2.6.0"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.0.0",
