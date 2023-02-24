@@ -4,7 +4,12 @@ import {
   Line,
   Node,
 } from "@motion-canvas/2d/lib/components";
-import { computed, initial, signal } from "@motion-canvas/2d/lib/decorators";
+import {
+  computed,
+  initial,
+  signal,
+  vector2Signal,
+} from "@motion-canvas/2d/lib/decorators";
 import { all, waitFor } from "@motion-canvas/core/lib/flow";
 import { SimpleSignal } from "@motion-canvas/core/lib/signals";
 import { ThreadGenerator } from "@motion-canvas/core/lib/threading";
@@ -12,7 +17,12 @@ import {
   TimingFunction,
   easeInOutCubic,
 } from "@motion-canvas/core/lib/tweening";
-import { PossibleRect, Rect, Vector2 } from "@motion-canvas/core/lib/types";
+import {
+  PossibleRect,
+  Rect,
+  Vector2,
+  Vector2Signal,
+} from "@motion-canvas/core/lib/types";
 import { useLogger } from "@motion-canvas/core/lib/utils";
 
 import { getFromCycled, wrapArray } from "./utils";
@@ -105,7 +115,9 @@ export interface CameraViewProps
 }
 
 export class CameraView extends Layout {
-  private translation = Vector2.createSignal(0);
+  @initial(Vector2.zero)
+  @vector2Signal("translation")
+  private declare readonly translation: Vector2Signal<this>;
 
   @initial(1)
   @signal()
