@@ -13,7 +13,7 @@ import {
   TimingFunction,
   easeInOutCubic,
 } from "@motion-canvas/core/lib/tweening";
-import { PossibleRect, Rect, Vector2 } from "@motion-canvas/core/lib/types";
+import { PossibleBBox, BBox, Vector2 } from "@motion-canvas/core/lib/types";
 import { useLogger } from "@motion-canvas/core/lib/utils";
 
 import { getFromCycled, wrapArray } from "./utils";
@@ -235,7 +235,7 @@ export class CameraView extends Layout {
    * @param timing - The timing function to use for the transition
    */
   public zoomOnto(
-    area: PossibleRect,
+    area: PossibleBBox,
     duration?: number,
     buffer?: number,
     timing?: TimingFunction,
@@ -259,7 +259,7 @@ export class CameraView extends Layout {
   ): ThreadGenerator;
 
   public *zoomOnto(
-    area: PossibleRect | Node,
+    area: PossibleBBox | Node,
     duration: number = 1,
     buffer: number = 0,
     timing: TimingFunction = easeInOutCubic,
@@ -272,13 +272,13 @@ export class CameraView extends Layout {
         return;
       }
 
-      area = new Rect(
+      area = new BBox(
         area.absolutePosition().transformAsPoint(this.worldToLocal()),
-        area.cacheRect().size,
+        area.cacheBBox().size,
       );
     }
 
-    const rect = new Rect(area);
+    const rect = new BBox(area);
     const scale = this.size().div(this.fitRectAroundArea(rect, buffer));
 
     yield* all(
@@ -309,12 +309,12 @@ export class CameraView extends Layout {
    * @param timing - The timing function to use for the transition
    */
   public centerOn(
-    area: PossibleRect,
+    area: PossibleBBox,
     duration?: number,
     timing?: TimingFunction,
   ): ThreadGenerator;
   public *centerOn(
-    area: Vector2 | PossibleRect | Node,
+    area: Vector2 | PossibleBBox | Node,
     duration: number = 1,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
@@ -329,7 +329,7 @@ export class CameraView extends Layout {
       area = this.getRectFromNode(area);
     }
 
-    yield* this.translation(new Rect(area).position.flipped, duration, timing);
+    yield* this.translation(new BBox(area).position.flipped, duration, timing);
   }
 
   /**
@@ -467,10 +467,10 @@ export class CameraView extends Layout {
     return false;
   }
 
-  private getRectFromNode(node: Node): Rect {
-    return new Rect(
+  private getRectFromNode(node: Node): BBox {
+    return new BBox(
       node.absolutePosition().transformAsPoint(this.worldToLocal()),
-      node.cacheRect().size,
+      node.cacheBBox().size,
     );
   }
 
@@ -481,7 +481,7 @@ export class CameraView extends Layout {
    * @param area - The node that the rectangle should be fitted around
    * @param buffer - Buffer to apply around the node and the edges of the rectangle
    */
-  private fitRectAroundArea(area: Rect, buffer: number): Vector2 {
+  private fitRectAroundArea(area: BBox, buffer: number): Vector2 {
     const aspectRatio = this.size().height / this.size().width;
     const areaAspectRatio = area.height / area.width;
 
