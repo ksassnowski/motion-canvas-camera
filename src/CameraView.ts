@@ -5,16 +5,26 @@ import {
   Node,
   NodeState,
 } from "@motion-canvas/2d/lib/components";
-import { computed, initial, signal } from "@motion-canvas/2d/lib/decorators";
+import {
+  computed,
+  initial,
+  signal,
+  vector2Signal,
+} from "@motion-canvas/2d/lib/decorators";
 import { all, waitFor } from "@motion-canvas/core/lib/flow";
-import { SimpleSignal } from "@motion-canvas/core/lib/signals";
+import { SignalValue, SimpleSignal } from "@motion-canvas/core/lib/signals";
 import { ThreadGenerator } from "@motion-canvas/core/lib/threading";
 import {
   TimingFunction,
   easeInOutCubic,
 } from "@motion-canvas/core/lib/tweening";
-import { PossibleBBox, BBox, Vector2 } from "@motion-canvas/core/lib/types";
-import { useLogger } from "@motion-canvas/core/lib/utils";
+import {
+  BBox,
+  PossibleBBox,
+  PossibleVector2,
+  Vector2,
+  Vector2Signal,
+} from "@motion-canvas/core/lib/types";
 
 import { getFromCycled, wrapArray } from "./utils";
 
@@ -102,7 +112,9 @@ export interface TravelOptions {
 
 export interface CameraViewProps
   extends Omit<LayoutProps, "scale" | "position"> {
-  baseZoom?: number;
+  baseZoom?: SignalValue<number>;
+  scene?: SignalValue<Node>;
+  translation?: SignalValue<PossibleVector2>;
 }
 
 export class CameraView extends Layout {
@@ -110,7 +122,12 @@ export class CameraView extends Layout {
   @signal()
   public declare readonly baseZoom: SimpleSignal<number, this>;
 
-  private translation = Vector2.createSignal(0);
+  @vector2Signal("translation")
+  public declare readonly translation: Vector2Signal<this>;
+
+  @initial(null)
+  @signal()
+  public declare readonly scene: SimpleSignal<Node | null, this>;
 
   public constructor(props: CameraViewProps) {
     super({
@@ -264,21 +281,7 @@ export class CameraView extends Layout {
     buffer: number = 0,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
-    if (area instanceof Node) {
-      if (!this.isPartOfSceneTree(area)) {
-        useLogger().error(
-          "Trying to zoom onto a node that is not a child of the camera view",
-        );
-        return;
-      }
-
-      area = new BBox(
-        area.absolutePosition().transformAsPoint(this.worldToLocal()),
-        area.cacheBBox().size,
-      );
-    }
-
-    const rect = new BBox(area);
+    const rect = this.getRectFromInput(area);
     const scale = this.size().div(this.fitRectAroundArea(rect, buffer));
 
     yield* all(
@@ -318,18 +321,11 @@ export class CameraView extends Layout {
     duration: number = 1,
     timing: TimingFunction = easeInOutCubic,
   ): ThreadGenerator {
-    if (area instanceof Node) {
-      if (!this.isPartOfSceneTree(area)) {
-        useLogger().error(
-          "Trying to zoom onto a node that is not a child of the camera view",
-        );
-        return;
-      }
-
-      area = this.getRectFromNode(area);
-    }
-
-    yield* this.translation(new BBox(area).position.flipped, duration, timing);
+    yield* this.translation(
+      this.getRectFromInput(area).position.flipped,
+      duration,
+      timing,
+    );
   }
 
   /**
@@ -391,16 +387,6 @@ export class CameraView extends Layout {
     defaults.zoom = wrapArray(defaults.zoom);
     defaults.timing = wrapArray(defaults.timing);
 
-    nodes = nodes.filter((node) => {
-      const result = this.isPartOfSceneTree(node);
-      if (!result) {
-        useLogger().warn(
-          "Node is not part of the camera's scene tree. It will get ignored during the transition",
-        );
-      }
-      return result;
-    });
-
     for (let i = 0; i < nodes.length; i++) {
       const zoom = getFromCycled(defaults.zoom, i);
       const node = getFromCycled(nodes, i);
@@ -448,30 +434,15 @@ export class CameraView extends Layout {
     );
   }
 
-  /**
-   * Recursively checks if the provided node is a child of the camera view.
-   *
-   * @param node - The node to check
-   */
-  private isPartOfSceneTree(node: Node): boolean {
-    let parent = node.parent();
-
-    while (parent) {
-      if (parent === this) {
-        return true;
-      }
-      node = parent;
-      parent = parent.parent();
+  private getRectFromInput(area: Node | PossibleBBox): BBox {
+    if (area instanceof Node) {
+      return new BBox(
+        area.absolutePosition().transformAsPoint(this.worldToLocal()),
+        area.cacheBBox().size,
+      );
     }
 
-    return false;
-  }
-
-  private getRectFromNode(node: Node): BBox {
-    return new BBox(
-      node.absolutePosition().transformAsPoint(this.worldToLocal()),
-      node.cacheBBox().size,
-    );
+    return new BBox(area);
   }
 
   /**
@@ -508,5 +479,14 @@ export class CameraView extends Layout {
       rotation: this.rotation(),
       scale: this.scale(),
     };
+  }
+
+  public override hit(position: Vector2): Node | null {
+    return this.scene()?.hit(position) ?? super.hit(position);
+  }
+
+  protected override draw(context: CanvasRenderingContext2D): void {
+    super.draw(context);
+    this.scene()?.render(context);
   }
 }
