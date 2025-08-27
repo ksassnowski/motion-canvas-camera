@@ -1,5 +1,8 @@
 # :movie_camera: Motion Canvas Camera
 
+> [!IMPORTANT]
+> Motion Canvas now has a [built-in camera component](https://motioncanvas.io/docs/camera) so this package is no longer necessary. It will probably continue to work but will not receive any further updates.
+
 https://user-images.githubusercontent.com/5139098/218100233-fa3bde50-122b-4e21-8ecb-0817ae5ed76a.mp4
 
 A camera component for [Motion Canvas](https://github.com/motion-canvas/motion-canvas) that allows you focus on elements, move the camera, follow paths and much more.
